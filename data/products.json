@@ -1,0 +1,26 @@
+[
+  {
+    "id": "prod1",
+    "name": "Laptop",
+    "price": 1200
+  },
+  {
+    "id": "prod2",
+    "name": "Mouse",
+    "price": 25
+  },
+  {
+    "id": "b79a69a1-719d-4c40-bd23-554f9bc5d16c",
+    "name": "Smartphone appel",
+    "description": "Powerful smartphone with amazing camera.",
+    "price": 799.99,
+    "category": "Electronics"
+  },
+  {
+    "id": "f328b873-2c2a-4e69-93e4-865c45347023",
+    "name": "Smartphone iphone",
+    "description": "Powerful smartphone with amazing camera.",
+    "price": 799.99,
+    "category": "Electronics"
+  }
+]
