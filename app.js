@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config(); // memuat variable dari .env ke process.env
+
 import express from "express"
 import "express-async-errors"
 import productRoutes from "./routes/productRoutes.js"
