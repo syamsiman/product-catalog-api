@@ -1,6 +1,7 @@
 import express from "express"
 import "express-async-errors"
 import productRoutes from "./routes/productRoutes.js"
+import authRoutes from "./routes/authRoutes.js"
 
 const app = express()
 
@@ -16,6 +17,9 @@ app.get("/", (req, res) => {
 
 // /api/products 
 app.use('/api/products', productRoutes)
+
+// /api/auth/register
+app.use('/api/auth', authRoutes)
 
 
 // middleware not found

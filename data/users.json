@@ -3,5 +3,12 @@
     "id": "user1",
     "username": "alice",
     "email": "alice@example.com"
+  },
+  {
+    "id": "6c0df780-762a-4357-b833-b747c83077be",
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "$2b$10$/y03wYP8eS/6toBuR8dF2uImjKP71bfqfHQy8lY5GwZ2Il6Ozv6Gq",
+    "role": "user"
   }
 ]
