@@ -97,7 +97,7 @@ export const loginUser = async (req, res, next) => {
                 id: user.id,
                 role: user.role
             },   // payload: informasi yang ingin disimpan di token 
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET, // secret key
             {expiresIn: process.env.JWT_EXPIRES_IN}
         )
 
