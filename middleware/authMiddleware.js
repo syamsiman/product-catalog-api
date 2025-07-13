@@ -12,6 +12,10 @@ export const protect = async (req, res, next) => {
   ) {
     // Format: 'Bearer TOKEN_NYA'
     token = req.headers.authorization.split(" ")[1];
+  } 
+  // if it is not in the header, check in cookie 
+  else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
   }
 
   // if there's no token

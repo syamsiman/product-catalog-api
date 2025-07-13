@@ -5,11 +5,13 @@ import express from "express"
 import "express-async-errors"
 import productRoutes from "./routes/productRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import cookieParser from 'cookie-parser';
 
 const app = express()
 
 // middleware dasar
 app.use(express.json()) // untuk parsing json dari req body
+app.use(cookieParser())
 app.use(express.urlencoded({
     extended: true
 }))
