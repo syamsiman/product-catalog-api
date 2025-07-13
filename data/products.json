@@ -1,15 +1,5 @@
 [
   {
-    "id": "prod1",
-    "name": "Laptop",
-    "price": 1200
-  },
-  {
-    "id": "prod2",
-    "name": "Mouse",
-    "price": 25
-  },
-  {
     "id": "b79a69a1-719d-4c40-bd23-554f9bc5d16c",
     "name": "Smartphone appel",
     "description": "Powerful smartphone with amazing camera.",
@@ -22,5 +12,19 @@
     "description": "Powerful smartphone with amazing camera.",
     "price": 799.99,
     "category": "Electronics"
+  },
+  {
+    "id": "c4522f7c-b854-47e7-9d68-919a367667f3",
+    "name": "macbook pro",
+    "description": "the lightweight device in the world ",
+    "price": 20000,
+    "category": "gadget"
+  },
+  {
+    "id": "535a656d-e539-4023-a24b-a9240e64c38d",
+    "name": "macbook pro",
+    "description": "the lightweight device in the world ",
+    "price": 20000,
+    "category": "gadget"
   }
 ]

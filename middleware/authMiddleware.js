@@ -55,3 +55,30 @@ export const protect = async (req, res, next) => {
     });
   }
 };
+
+// authorize role
+/**
+ * @param {array} roles - allowed roles (e.g ["admin", "editor"])
+ */
+
+export const authorizeRoles =  (...roles) => {
+  return (req, res, next) => {
+    // req.user is managed by middleware 'protect'
+    if (!req.user || !req.user.role) {
+      return res.status(401).json({
+        status: 'fail',
+        message: "akses ditolak. informasi peran pengguna tidak tersedia"
+      })
+    }
+
+    // check if the role user is in the list of allowed roles
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        status: 'fail',
+        message: "anda tidak memiliki izin untuk melakukan aksi ini"
+      })
+    }
+
+    next(); // if the role is allowed, next
+  }
+}

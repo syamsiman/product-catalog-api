@@ -6,18 +6,19 @@ import {
   updateProduct,
   deleteProduct
 } from "../controllers/productController.js";
+import { authorizeRoles, protect } from "../middleware/authMiddleware.js";
 
 const productRoutes = Router();
 
 // route for /api/products
 productRoutes.route("/")
-.get(getAllProducts)
-.post(createProduct);
+.get(protect, getAllProducts)
+.post(protect, authorizeRoles('admin'), createProduct);
 
 // route for /api/products/:id
 productRoutes.route('/:id')
-.get(getProductById)
-.put(updateProduct)
-.delete(deleteProduct)
+.get(protect, getProductById)
+.put(protect, authorizeRoles("admin"), updateProduct)
+.delete(protect, authorizeRoles("admin"), deleteProduct)
 
 export default productRoutes;
