@@ -62,13 +62,6 @@ export const createProduct = async (req, res, next) => {
             createdAt: new Date().toISOString,
             updatedAt: new Date().toISOString
         }
-        //  Validasi sederhana (nanti akan pakai library validasi khusus)
-        if (!newProduct.name || !newProduct.price || isNaN(newProduct.price) || !newProduct.category) {
-            return res.status(400).json({
-                status: 'fail',
-                message: 'Nama, harga, dan kategori produk harus disediakan dan valid!'
-            });
-        }
 
         const products = await readProducts(); // mendapatkan semua product
         products.push(newProduct);
@@ -126,14 +119,6 @@ export const updateProduct = async (req, res, next) => {
             }
         }
 
-        // simple validation to update
-        if (req.body.price && isNaN(parseFloat(req.body.price))) {
-            return res.status(400).json({
-                status: "fail",
-                message: 'harga harus berupa angka valid'
-            })
-        }
-
         products[productIndex] = updatedProduct;
         await writeProducts(products)
 
@@ -143,7 +128,13 @@ export const updateProduct = async (req, res, next) => {
             data: { product: updatedProduct }
         })
     } catch (error) {
-        next(error)
+        if (error instanceof multer.MulterError) {
+            return res.status(400).json({
+                status: 'fail',
+                message: error.message
+            });
+        }
+        next(error);
     }
 }
 

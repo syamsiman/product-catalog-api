@@ -8,14 +8,6 @@ export const registerUser = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    // validation
-    if (!username || !email || !password) {
-      return res.status(400).json({
-        status: "fail",
-        message: "nama pengguna, email, dan password harus disediakan!",
-      });
-    }
-
     const users = await readUsers();
 
     // check duplicate username or email
@@ -65,15 +57,7 @@ export const registerUser = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // validate login input
-    if (!email || !password) {
-      return res.status(404).json({
-        status: "fail",
-        message: "email dan password harus disediakan!",
-      });
-    }
-
+    
     const users = await readUsers();
 
     // find a user by email
