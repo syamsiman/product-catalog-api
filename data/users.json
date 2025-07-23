@@ -10,5 +10,33 @@
     "email": "test@example.com",
     "password": "$2b$10$/y03wYP8eS/6toBuR8dF2uImjKP71bfqfHQy8lY5GwZ2Il6Ozv6Gq",
     "role": "user"
+  },
+  {
+    "id": "75b1525d-e913-4c11-8a40-380e945b2d5f",
+    "username": "samsi",
+    "email": "samsisukses@gmail.com",
+    "password": "$2b$10$eqvludFOCyCikurqcMCh0OLcJLYwgWag.ApK5AYoHfTPAIgFVoFJG",
+    "role": "admin"
+  },
+  {
+    "id": "bad776ac-e25d-488f-b91e-a707dde411ee",
+    "username": "udin",
+    "email": "udin@gmail.com",
+    "password": "$2b$10$69.DQqJTJVbd4d1fxignqub4tL6qY757oW6nnODLcGBVe/JBpC/di",
+    "role": "user"
+  },
+  {
+    "id": "c5ae2382-0b9a-4b00-93c8-053e2384093a",
+    "username": "joko",
+    "email": "joko@gmail.com",
+    "password": "$2b$10$NSNvKhxlKWY6EXR4GGlEh.Lxx0sn0iDkITcJ664LGkTb2FUR3hBRe",
+    "role": "user"
+  },
+  {
+    "id": "43be92f7-a09f-4776-96f4-e4053c92ab29",
+    "username": "malik",
+    "email": "malik@gmail.com",
+    "password": "$2b$10$fab6.S7fbVE4xcYotoWKTORiUpuyCI1e2WzcJpl6xln3U4xzVX1ly",
+    "role": "user"
   }
 ]

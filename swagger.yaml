@@ -1,0 +1,595 @@
+# swagger.yaml
+openapi: 3.0.0
+info:
+  title: Product Catalog API
+  version: 1.0.0
+  description: API untuk mengelola katalog produk, termasuk otentikasi pengguna, otorisasi, dan upload gambar.
+servers:
+  - url: http://localhost:3000/api
+    description: Server Pengembangan Lokal
+
+tags:
+  - name: Authentication
+    description: Operasi terkait otentikasi pengguna
+  - name: Products
+    description: Operasi terkait manajemen produk
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token # Nama cookie yang digunakan untuk JWT
+      description: Otentikasi JWT menggunakan cookie http-only
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # Format token (optional)
+      description: Otentikasi JWT menggunakan header Authorization (alternatif untuk cookie)
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID unik pengguna
+        username:
+          type: string
+          description: Nama pengguna
+        email:
+          type: string
+          format: email
+          description: Alamat email pengguna
+        role:
+          type: string
+          enum: [user, admin]
+          description: Peran pengguna (user atau admin)
+        createdAt:
+          type: string
+          format: date-time
+          description: Tanggal dan waktu pembuatan pengguna
+      required:
+        - id
+        - username
+        - email
+        - role
+        - createdAt
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID unik produk
+        name:
+          type: string
+          description: Nama produk
+        description:
+          type: string
+          nullable: true
+          description: Deskripsi produk
+        price:
+          type: number
+          format: float
+          description: Harga produk
+        category:
+          type: string
+          description: Kategori produk
+        image:
+          type: string
+          nullable: true
+          description: URL gambar produk
+        createdAt:
+          type: string
+          format: date-time
+          description: Tanggal dan waktu pembuatan produk
+        updatedAt:
+          type: string
+          format: date-time
+          description: Tanggal dan waktu terakhir pembaruan produk
+      required:
+        - id
+        - name
+        - price
+        - category
+        - createdAt
+        - updatedAt
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: fail
+        message:
+          type: string
+          example: Pesan error
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          description: Detail error validasi (jika ada)
+
+paths:
+  /auth/register:
+    post:
+      summary: Mendaftarkan pengguna baru
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+                  pattern: "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{6,}$"
+              required:
+                - username
+                - email
+                - password
+      responses:
+        '201':
+          description: Pengguna berhasil didaftarkan dan token dikirim dalam cookie.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: token=eyJ...; Path=/; HttpOnly; Max-Age=3600000;
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Registrasi berhasil
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Konflik - Nama pengguna atau email sudah terdaftar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      summary: Login pengguna
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Pengguna berhasil login dan token dikirim dalam cookie.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: token=eyJ...; Path=/; HttpOnly; Max-Age=3600000;
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Login berhasil
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Tidak Sah - Email atau password salah.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    get:
+      summary: Logout pengguna
+      tags:
+        - Authentication
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Berhasil logout. Token cookie dihapus.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: token=none; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Berhasil logout!
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products:
+    get:
+      summary: Mendapatkan semua produk
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Kata kunci untuk mencari produk berdasarkan nama atau deskripsi.
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter produk berdasarkan kategori.
+      responses:
+        '200':
+          description: Daftar produk berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 5
+                  data:
+                    type: object
+                    properties:
+                      products:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Membuat produk baru
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                  description: Nama produk (wajib)
+                description:
+                  type: string
+                  maxLength: 500
+                  description: Deskripsi produk (opsional)
+                price:
+                  type: number
+                  format: float
+                  minimum: 0.01
+                  description: Harga produk (wajib, harus positif)
+                category:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  description: Kategori produk (wajib)
+                image:
+                  type: string
+                  format: binary
+                  description: File gambar produk (opsional, Max 1MB, JPEG/PNG)
+              required:
+                - name
+                - price
+                - category
+      responses:
+        '201':
+          description: Produk berhasil dibuat.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Produk berhasil dibuat!
+                  data:
+                    type: object
+                    properties:
+                      product:
+                        $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{id}:
+    get:
+      summary: Mendapatkan produk berdasarkan ID
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID unik produk
+      responses:
+        '200':
+          description: Produk berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      product:
+                        $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Memperbarui produk yang sudah ada
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID unik produk yang akan diperbarui
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                  description: Nama produk (opsional)
+                description:
+                  type: string
+                  maxLength: 500
+                  description: Deskripsi produk (opsional)
+                price:
+                  type: number
+                  format: float
+                  minimum: 0.01
+                  description: Harga produk (opsional, harus positif)
+                category:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  description: Kategori produk (opsional)
+                image:
+                  type: string
+                  format: binary
+                  description: File gambar produk baru (opsional, Max 1MB, JPEG/PNG)
+      responses:
+        '200':
+          description: Produk berhasil diperbarui.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Produk berhasil diperbarui!
+                  data:
+                    type: object
+                    properties:
+                      product:
+                        $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Menghapus produk
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID unik produk yang akan dihapus
+      responses:
+        '200':
+          description: Produk berhasil dihapus.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Produk berhasil dihapus!
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  responses:
+    Unauthorized:
+      description: Tidak sah - Autentikasi diperlukan atau token tidak valid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            example:
+              status: fail
+              message: Anda tidak login! Silakan login untuk mendapatkan akses.
+    Forbidden:
+      description: Terlarang - Pengguna tidak memiliki izin untuk melakukan tindakan ini.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            example:
+              status: fail
+              message: Anda tidak memiliki izin untuk mengakses rute ini.
+    NotFound:
+      description: Tidak Ditemukan - Sumber daya tidak ditemukan.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            example:
+              status: fail
+              message: Sumber daya tidak ditemukan.
+    BadRequest:
+      description: Permintaan Buruk - Input tidak valid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            example:
+              status: fail
+              message: Validasi input gagal.
+              errors:
+                - field: username
+                  message: Nama pengguna minimal 3 karakter.
+    InternalServerError:
+      description: Kesalahan Server Internal.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            example:
+              status: error
+              message: Terjadi kesalahan di server.

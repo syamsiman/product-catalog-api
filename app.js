@@ -5,11 +5,27 @@ import express from "express"
 import "express-async-errors"
 import productRoutes from "./routes/productRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import cookieParser from 'cookie-parser';
+import YAML from 'yamljs';
+import swaggerUi from 'swagger-ui-express'
+import path from 'path'
+import { fileURLToPath } from 'url';
 
 const app = express()
 
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url); // import.meta.url = modul saat ini kemudian diubah ke path
+const __dirname = path.dirname(__filename); // kemudian ambil nama direktori 
+
+// --- Swagger Docs Setup ---
+const swaggerDocument = YAML.load(path.resolve(__dirname, './swagger.yaml'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+
+
 // middleware dasar
+app.use(express.static('public'))
 app.use(express.json()) // untuk parsing json dari req body
+app.use(cookieParser())
 app.use(express.urlencoded({
     extended: true
 }))
@@ -52,4 +68,5 @@ app.use((err, req, res, next) => {
 
 app.listen(3000, () => {
     console.log("server is running on port 3000");
+    console.log('api documentation available at http://localhost:3000/api-docs');
 })

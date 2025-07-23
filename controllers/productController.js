@@ -1,6 +1,9 @@
 // import { uuid } from "uuidv4";
 import { readProducts, writeProducts } from "../utils/dataHandler.js";
 import {v4 as uuidv4} from 'uuid';
+import multer from "multer";
+import fs from 'fs/promises';
+import path from "path";
 
 // function get all products
 export const getAllProducts = async (req, res, next) => {
@@ -54,15 +57,10 @@ export const createProduct = async (req, res, next) => {
             description,
             price: parseFloat(price),
             category,
+            // tambah jalur gambar jika ada file yang diupload
+            image: req.file ? `/uploads/${req.file.filename}` : null,
             createdAt: new Date().toISOString,
             updatedAt: new Date().toISOString
-        }
-        //  Validasi sederhana (nanti akan pakai library validasi khusus)
-        if (!newProduct.name || !newProduct.price || isNaN(newProduct.price) || !newProduct.category) {
-            return res.status(400).json({
-                status: 'fail',
-                message: 'Nama, harga, dan kategori produk harus disediakan dan valid!'
-            });
         }
 
         const products = await readProducts(); // mendapatkan semua product
@@ -76,7 +74,15 @@ export const createProduct = async (req, res, next) => {
         });
 
     } catch (error) {
-        next(error)
+    //    multer error handling (jika filter file atau ukuran file tidak sesuai)
+        if (error instanceof multer.MulterError) {
+            return res.status(400).json({
+                status: 'fail',
+                message: error.message
+            })
+        } else {
+            next(error)
+        }
     }
 }
 
@@ -93,19 +99,24 @@ export const updateProduct = async (req, res, next) => {
             })
         }
 
+        const currentProduct = products[productIndex];
+
         const updatedProduct = {
-            ...products[productIndex], // ambil data product berdasarkan index
+            ...currentProduct, // ambil data product berdasarkan index
             ...req.body,
             id: req.params.id, // memastikan email tetap sama
             updatedAt: new Date().toISOString()
         }
 
-        // simple validation to update
-        if (req.body.price && isNaN(parseFloat(req.body.price))) {
-            return res.status(400).json({
-                status: "fail",
-                message: 'harga harus berupa angka valid'
-            })
+        // jika ada file gambar baru yang diupload, perbarui properti image
+        if (req.file) {
+            updatedProduct.image = `/uploads/${req.file.filename}`;
+            // (opsional) hapus file lama jika ada, untuk menghindari penumpukan
+            if (currentProduct.image) {
+                fs.unlink(path.join(path.resolve('public'), currentProduct.image), err => {
+                    if (err) console.error('Error deleting old image', err);
+                })
+            }
         }
 
         products[productIndex] = updatedProduct;
@@ -117,7 +128,13 @@ export const updateProduct = async (req, res, next) => {
             data: { product: updatedProduct }
         })
     } catch (error) {
-        next(error)
+        if (error instanceof multer.MulterError) {
+            return res.status(400).json({
+                status: 'fail',
+                message: error.message
+            });
+        }
+        next(error);
     }
 }
 
