@@ -141,7 +141,7 @@ res.status(statusCode).cookie('token', token, options).json({
 // function to logout user (removing cookie) 
 export const logoutUser = (req, res) => {
     res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000),
+        expires: new Date(Date.now() + 10 * 1000), // kadaluarsa dalam 10 detik
         httpOnly: true,
     })
 

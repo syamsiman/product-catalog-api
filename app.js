@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 const app = express()
 
 // middleware dasar
+app.use(express.static('public'))
 app.use(express.json()) // untuk parsing json dari req body
 app.use(cookieParser())
 app.use(express.urlencoded({
